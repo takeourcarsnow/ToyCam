@@ -9,6 +9,7 @@ export function useEffects(
 ) {
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const animationFrameRef = useRef<number>();
+  const frameCount = useRef(0);
 
   const processFrame = useCallback(() => {
     const video = videoRef.current;
@@ -28,10 +29,12 @@ export function useEffects(
       canvas.height = video.videoHeight;
     }
 
-    // Draw video frame to canvas
+    frameCount.current++;
+
+    // Always draw the video frame
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    // Apply effect
+    // Apply effect if active
     if (currentEffect !== 'none') {
       const effectFunction = EFFECT_FUNCTIONS[currentEffect];
       let imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);

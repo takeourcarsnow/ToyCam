@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import type { CameraState } from '@/types/effects';
 
-export function useCamera() {
+export function useCamera(resolution: 'low' | 'medium' | 'high' = 'high') {
   const [cameraState, setCameraState] = useState<CameraState>({
     isActive: false,
     facingMode: 'user',
@@ -9,6 +9,23 @@ export function useCamera() {
   });
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
+
+  const getConstraints = (facingMode: 'user' | 'environment', res: 'low' | 'medium' | 'high') => {
+    const resolutions = {
+      low: { width: 640, height: 480 },
+      medium: { width: 1280, height: 720 },
+      high: { width: 1920, height: 1080 },
+    };
+    const { width, height } = resolutions[res];
+    return {
+      video: {
+        facingMode,
+        width: { ideal: width },
+        height: { ideal: height },
+      },
+      audio: false,
+    };
+  };
 
   const startCamera = useCallback(async (facingMode: 'user' | 'environment' = 'user') => {
     try {
@@ -19,14 +36,7 @@ export function useCamera() {
         cameraState.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
 
-      const constraints: MediaStreamConstraints = {
-        video: {
-          facingMode,
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-        },
-        audio: false,
-      };
+      const constraints = getConstraints(facingMode, resolution);
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
@@ -46,7 +56,7 @@ export function useCamera() {
       setError('Unable to access camera. Please check permissions.');
       setCameraState((prev: CameraState) => ({ ...prev, isActive: false }));
     }
-  }, [cameraState.stream]);
+  }, [cameraState.stream, resolution]);
 
   const stopCamera = useCallback(() => {
     if (cameraState.stream) {

@@ -5,7 +5,8 @@ import { applyAscii } from './ascii';
 import { applyPixelate } from './pixelate';
 import { applyCRT } from './crt';
 import { applyVintage } from './vintage';
-import { applySepia, applyGrayscale, applyInvert } from './colorFilters';
+import { applyGrayscale, applyInvert } from './colorFilters';
+import { applyTMax, applyPortra, applyEktar, applyProvia, applyTriX, applyHP5 } from './filmFilters';
 
 export interface EffectFunction {
   apply: (imageData: ImageData, settings: any, canvas?: HTMLCanvasElement) => ImageData | void;
@@ -15,14 +16,13 @@ export interface EffectFunction {
 export const EFFECT_FUNCTIONS: Record<Exclude<EffectType, 'none'>, EffectFunction> = {
   filmGrain: {
     apply: (imageData, settings) => {
-      return applyFilmGrain(imageData, settings.intensity);
+      return applyFilmGrain(imageData, settings.intensity, settings.grainSize);
     },
   },
   dithering: {
     apply: (imageData, settings) => {
       return applyDithering(
         imageData,
-        settings.colors,
         settings.method,
         settings.scale,
         settings.palette
@@ -58,19 +58,30 @@ export const EFFECT_FUNCTIONS: Record<Exclude<EffectType, 'none'>, EffectFunctio
     },
     usesCanvas: true,
   },
-  sepia: {
-    apply: (imageData, settings) => {
-      return applySepia(imageData, settings.intensity);
-    },
-  },
-  grayscale: {
-    apply: (imageData, settings) => {
-      return applyGrayscale(imageData, settings.intensity);
-    },
-  },
   invert: {
     apply: (imageData, settings) => {
       return applyInvert(imageData, settings.intensity);
+    },
+  },
+  film: {
+    apply: (imageData, settings) => {
+      const { mode, intensity } = settings;
+      switch (mode) {
+        case 'tmax':
+          return applyTMax(imageData, intensity);
+        case 'portra':
+          return applyPortra(imageData, intensity);
+        case 'ektar':
+          return applyEktar(imageData, intensity);
+        case 'provia':
+          return applyProvia(imageData, intensity);
+        case 'trix':
+          return applyTriX(imageData, intensity);
+        case 'hp5':
+          return applyHP5(imageData, intensity);
+        default:
+          return imageData;
+      }
     },
   },
 };

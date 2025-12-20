@@ -12,9 +12,8 @@ export function applyAscii(
   const width = imageData.width;
   const height = imageData.height;
   
-  // Clear canvas with background
-  const isDark = document.documentElement.classList.contains('dark');
-  ctx.fillStyle = isDark ? '#000000' : '#ffffff';
+  // Clear canvas with black background (matches camera view)
+  ctx.fillStyle = '#000000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
   
   // Set text properties

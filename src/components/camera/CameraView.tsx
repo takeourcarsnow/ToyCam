@@ -1,11 +1,11 @@
 'use client';
 
+import React, { useState } from 'react';
 import type { EffectType, EffectSettings } from '@/types/effects';
-import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, Moon, Sun } from 'lucide-react';
+import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, HelpCircle } from 'lucide-react';
 import { EFFECTS } from '@/lib/constants';
 import SettingsPanel from '../settings/SettingsPanel';
 import EffectButton from '../ui/EffectButton';
-import { useTheme } from '../ThemeProvider';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -31,9 +31,10 @@ interface CameraViewProps {
   onToggleCaptureMode: () => void;
   onToggleCamera: () => void;
   onSwitchCamera: () => void;
+  isLoading?: boolean;
 }
 
-export default function CameraView({
+function CameraView({
   videoRef,
   canvasRef,
   cameraActive,
@@ -53,8 +54,9 @@ export default function CameraView({
   onToggleCaptureMode,
   onToggleCamera,
   onSwitchCamera,
+  isLoading = false,
 }: CameraViewProps) {
-  const { theme, toggleTheme } = useTheme();
+  const [showHelp, setShowHelp] = useState(false);
 
   return (
     <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
@@ -62,21 +64,17 @@ export default function CameraView({
       {!isPreviewMode && (
         <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
           <button
-            onClick={toggleTheme}
-            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors"
-            aria-label="Toggle theme"
+            onClick={() => setShowHelp(true)}
+            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
+            aria-label="Show keyboard shortcuts"
           >
-            {theme === 'light' ? (
-              <Moon className="w-5 h-5" />
-            ) : (
-              <Sun className="w-5 h-5" />
-            )}
+            <HelpCircle className="w-5 h-5" />
           </button>
           
           {cameraActive && (
             <button
               onClick={onSwitchCamera}
-              className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors"
+              className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
               aria-label="Switch camera"
             >
               <SwitchCamera className="w-5 h-5" />
@@ -85,7 +83,7 @@ export default function CameraView({
           
           <button
             onClick={onToggleCamera}
-            className={`p-3 rounded-full transition-colors ${
+            className={`p-3 rounded-full transition-all active:scale-95 ${
               cameraActive
                 ? 'bg-red-500 hover:bg-red-600 text-white'
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
@@ -166,9 +164,19 @@ export default function CameraView({
           className="text-center text-white/60 p-8 cursor-pointer hover:text-white/80 transition-colors"
           onClick={onToggleCamera}
         >
-          <Camera className="w-24 h-24 mx-auto mb-4 opacity-30 hover:opacity-50 transition-opacity" />
-          <p className="text-lg">Camera is off</p>
-          <p className="text-sm mt-2">Tap here or the camera button to start</p>
+          {isLoading ? (
+            <>
+              <div className="w-24 h-24 mx-auto mb-4 border-4 border-white/30 border-t-white rounded-full animate-spin"></div>
+              <p className="text-lg">Starting camera...</p>
+              <p className="text-sm mt-2">Please allow camera access</p>
+            </>
+          ) : (
+            <>
+              <Camera className="w-24 h-24 mx-auto mb-4 opacity-30 hover:opacity-50 transition-opacity" />
+              <p className="text-lg">Camera is off</p>
+              <p className="text-sm mt-2">Tap here or press 'C' to start</p>
+            </>
+          )}
         </div>
       )}
       
@@ -176,8 +184,14 @@ export default function CameraView({
       {error && (
         <div className="text-center text-red-400 p-8">
           <AlertCircle className="w-16 h-16 mx-auto mb-4" />
-          <p className="text-lg">{error}</p>
-          <p className="text-sm mt-2">Please allow camera access in your browser settings</p>
+          <p className="text-lg font-medium">Camera Error</p>
+          <p className="text-sm mt-2 mb-4">{error}</p>
+          <button
+            onClick={onToggleCamera}
+            className="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors"
+          >
+            Try Again
+          </button>
         </div>
       )}
       
@@ -196,7 +210,7 @@ export default function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onToggleCaptureMode}
-          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors z-10"
+          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all z-10"
           title={`Switch to ${captureMode === 'photo' ? 'video' : 'photo'} mode`}
         >
           {captureMode === 'photo' ? <Video className="w-5 h-5" /> : <Image className="w-5 h-5" />}
@@ -207,7 +221,7 @@ export default function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onCapture}
-          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 shadow-lg hover:scale-110 transition-transform z-20 ${
+          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
             captureMode === 'photo'
               ? 'bg-white border-white/20'
               : isRecording
@@ -238,20 +252,59 @@ export default function CameraView({
         <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-20">
           <button
             onClick={onDownload}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-colors"
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-all"
           >
             <Download className="w-5 h-5" />
             Download
           </button>
           <button
             onClick={onCancel}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-medium transition-colors"
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-all"
           >
             <X className="w-5 h-5" />
             Cancel
           </button>
         </div>
       )}
+
+      {/* Help modal */}
+      {showHelp && (
+        <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-30" onClick={() => setShowHelp(false)}>
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
+            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+              <div className="flex justify-between">
+                <span>Start/Stop Camera</span>
+                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">C</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Capture Photo/Video</span>
+                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Space</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Switch Photo/Video</span>
+                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">V</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Download (in preview)</span>
+                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Enter</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Cancel (in preview)</span>
+                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Esc</kbd>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowHelp(false)}
+              className="mt-4 w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white py-2 rounded-lg transition-all"
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
+
+export default React.memo(CameraView);

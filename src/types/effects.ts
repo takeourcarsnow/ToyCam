@@ -6,16 +6,15 @@ export type EffectType =
   | 'pixelate'
   | 'crt'
   | 'vintage'
-  | 'sepia'
-  | 'grayscale'
-  | 'invert';
+  | 'invert'
+  | 'film';
 
 export interface EffectSettings {
   filmGrain: {
     intensity: number;
+    grainSize: number;
   };
   dithering: {
-    colors: number;
     method: 'floyd-steinberg' | 'bayer' | 'atkinson' | 'ordered' | 'random';
     scale: number;
     palette: string;
@@ -36,13 +35,11 @@ export interface EffectSettings {
     vignette: number;
     scratch: number;
   };
-  sepia: {
-    intensity: number;
-  };
-  grayscale: {
-    intensity: number;
-  };
   invert: {
+    intensity: number;
+  };
+  film: {
+    mode: 'tmax' | 'portra' | 'ektar' | 'provia' | 'trix' | 'hp5';
     intensity: number;
   };
 }
@@ -56,15 +53,15 @@ export interface CameraState {
 export const defaultEffectSettings: EffectSettings = {
   filmGrain: {
     intensity: 0.15,
+    grainSize: 1,
   },
   dithering: {
-    colors: 8,
     method: 'floyd-steinberg',
-    scale: 6,
-    palette: 'none',
+    scale: 4,
+    palette: 'gameboy',
   },
   ascii: {
-    fontSize: 8,
+    fontSize: 32,
     characters: '@%#*+=-:. ',
     invert: false,
   },
@@ -79,13 +76,11 @@ export const defaultEffectSettings: EffectSettings = {
     vignette: 0.5,
     scratch: 0.3,
   },
-  sepia: {
-    intensity: 1,
-  },
-  grayscale: {
-    intensity: 1,
-  },
   invert: {
+    intensity: 1,
+  },
+  film: {
+    mode: 'portra',
     intensity: 1,
   },
 };

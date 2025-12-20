@@ -20,6 +20,14 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
       max: 0.5,
       step: 0.01,
     },
+    {
+      type: 'slider',
+      label: 'Grain Size',
+      key: 'grainSize',
+      min: 1,
+      max: 10,
+      step: 1,
+    },
   ],
   dithering: [
     {
@@ -27,7 +35,6 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
       label: 'Palette',
       key: 'palette',
       options: [
-        { value: 'none', label: 'Quantized' },
         { value: 'gameboy', label: 'Game Boy' },
         { value: 'gameboyPocket', label: 'Game Boy Pocket' },
         { value: 'sega', label: 'Sega Genesis' },
@@ -52,17 +59,9 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
     },
     {
       type: 'slider',
-      label: 'Color Levels',
-      key: 'colors',
-      min: 2,
-      max: 32,
-      step: 1,
-    },
-    {
-      type: 'slider',
       label: 'Resolution',
       key: 'scale',
-      min: 1,
+      min: 4,
       max: 10,
       step: 1,
     },
@@ -72,9 +71,22 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
       type: 'slider',
       label: 'Font Size',
       key: 'fontSize',
-      min: 4,
-      max: 32,
+      min: 12,
+      max: 128,
       step: 1,
+    },
+    {
+      type: 'buttons',
+      label: 'Charset',
+      key: 'characters',
+      options: [
+        { value: '@%#*+=-:. ', label: 'Classic' },
+        { value: '█▓▒░ ', label: 'Blocks' },
+        { value: 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789', label: 'Alphanumeric' },
+        { value: '█▉▊▋▌▍▎▏ ', label: 'Shades' },
+        { value: '⣿⣷⣶⣤⣄⣀ ', label: 'Braille' },
+        { value: '■□▪▫ ', label: 'Geometric' },
+      ],
     },
     {
       type: 'toggle',
@@ -128,27 +140,30 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
       step: 0.05,
     },
   ],
-  sepia: [
-    {
-      type: 'slider',
-      label: 'Intensity',
-      key: 'intensity',
-      min: 0,
-      max: 1,
-      step: 0.05,
-    },
-  ],
-  grayscale: [
-    {
-      type: 'slider',
-      label: 'Intensity',
-      key: 'intensity',
-      min: 0,
-      max: 1,
-      step: 0.05,
-    },
-  ],
   invert: [
+    {
+      type: 'slider',
+      label: 'Intensity',
+      key: 'intensity',
+      min: 0,
+      max: 1,
+      step: 0.05,
+    },
+  ],
+  film: [
+    {
+      type: 'buttons',
+      label: 'Film Type',
+      key: 'mode',
+      options: [
+        { value: 'portra', label: 'Portra' },
+        { value: 'tmax', label: 'T-MAX' },
+        { value: 'ektar', label: 'Ektar' },
+        { value: 'provia', label: 'Provia' },
+        { value: 'trix', label: 'Tri-X' },
+        { value: 'hp5', label: 'HP5' },
+      ],
+    },
     {
       type: 'slider',
       label: 'Intensity',

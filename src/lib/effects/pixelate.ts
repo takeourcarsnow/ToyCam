@@ -2,44 +2,32 @@ export function applyPixelate(
   imageData: ImageData,
   pixelSize: number = 10
 ): ImageData {
-  const data = imageData.data;
-  const width = imageData.width;
-  const height = imageData.height;
-  
-  for (let y = 0; y < height; y += pixelSize) {
-    for (let x = 0; x < width; x += pixelSize) {
-      // Calculate average color for this block
-      let r = 0, g = 0, b = 0, a = 0;
-      let count = 0;
-      
-      for (let py = 0; py < pixelSize && y + py < height; py++) {
-        for (let px = 0; px < pixelSize && x + px < width; px++) {
-          const idx = ((y + py) * width + (x + px)) * 4;
-          r += data[idx];
-          g += data[idx + 1];
-          b += data[idx + 2];
-          a += data[idx + 3];
-          count++;
-        }
-      }
-      
-      r /= count;
-      g /= count;
-      b /= count;
-      a /= count;
-      
-      // Apply average color to all pixels in block
-      for (let py = 0; py < pixelSize && y + py < height; py++) {
-        for (let px = 0; px < pixelSize && x + px < width; px++) {
-          const idx = ((y + py) * width + (x + px)) * 4;
-          data[idx] = r;
-          data[idx + 1] = g;
-          data[idx + 2] = b;
-          data[idx + 3] = a;
-        }
-      }
-    }
-  }
-  
-  return imageData;
+  if (pixelSize <= 1) return imageData;
+
+  // Create temporary canvases for efficient scaling
+  const tempCanvas = document.createElement('canvas');
+  const tempCtx = tempCanvas.getContext('2d');
+  if (!tempCtx) return imageData;
+
+  tempCanvas.width = imageData.width;
+  tempCanvas.height = imageData.height;
+  tempCtx.putImageData(imageData, 0, 0);
+
+  // Scale down to create pixelation effect
+  const scaledWidth = Math.max(1, Math.ceil(imageData.width / pixelSize));
+  const scaledHeight = Math.max(1, Math.ceil(imageData.height / pixelSize));
+
+  const scaledCanvas = document.createElement('canvas');
+  scaledCanvas.width = scaledWidth;
+  scaledCanvas.height = scaledHeight;
+  const scaledCtx = scaledCanvas.getContext('2d');
+  if (!scaledCtx) return imageData;
+
+  scaledCtx.drawImage(tempCanvas, 0, 0, scaledWidth, scaledHeight);
+
+  // Scale back up with nearest-neighbor interpolation for pixelation
+  tempCtx.imageSmoothingEnabled = false;
+  tempCtx.drawImage(scaledCanvas, 0, 0, imageData.width, imageData.height);
+
+  return tempCtx.getImageData(0, 0, imageData.width, imageData.height);
 }

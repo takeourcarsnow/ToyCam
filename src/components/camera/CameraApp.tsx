@@ -1,15 +1,15 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import { useCamera } from '@/hooks/useCamera';
 import { useEffects } from '@/hooks/useEffects';
 import type { EffectType, EffectSettings } from '@/types/effects';
 import { defaultEffectSettings } from '@/types/effects';
 import CameraView from './CameraView';
-import EffectsPanel from './EffectsPanel';
 
 export default function CameraApp() {
-  const { videoRef, cameraState, error, startCamera, stopCamera, switchCamera } = useCamera();
+  const [resolution, setResolution] = useState<'low' | 'medium' | 'high'>('medium');
+  const { videoRef, cameraState, error, startCamera, stopCamera, switchCamera } = useCamera(resolution);
   const [currentEffect, setCurrentEffect] = useState<EffectType>('none');
   const [settings, setSettings] = useState<EffectSettings>(defaultEffectSettings);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
@@ -17,17 +17,18 @@ export default function CameraApp() {
   const [isRecording, setIsRecording] = useState(false);
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [captureMode, setCaptureMode] = useState<'photo' | 'video'>('photo');
+  const [isLoading, setIsLoading] = useState(false);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   
   const { canvasRef } = useEffects(videoRef, currentEffect, settings);
 
-  const handleEffectChange = (effect: EffectType) => {
+  const handleEffectChange = useCallback((effect: EffectType) => {
     setCurrentEffect(effect);
-  };
+  }, []);
 
-  const handleSettingChange = (
+  const handleSettingChange = useCallback((
     effect: EffectType,
     key: string,
     value: any
@@ -39,9 +40,9 @@ export default function CameraApp() {
         [key]: value,
       },
     }));
-  };
+  }, []);
 
-  const handleCapture = () => {
+  const handleCapture = useCallback(() => {
     if (captureMode === 'photo') {
       if (!canvasRef.current) return;
       
@@ -57,9 +58,9 @@ export default function CameraApp() {
         startRecording();
       }
     }
-  };
+  }, [captureMode, canvasRef, isRecording]);
 
-  const startRecording = () => {
+  const startRecording = useCallback(() => {
     if (!canvasRef.current || !cameraState.stream) return;
 
     const canvas = canvasRef.current;
@@ -86,16 +87,16 @@ export default function CameraApp() {
     mediaRecorderRef.current = mediaRecorder;
     mediaRecorder.start();
     setIsRecording(true);
-  };
+  }, [canvasRef, cameraState.stream]);
 
-  const stopRecording = () => {
+  const stopRecording = useCallback(() => {
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
     }
-  };
+  }, [isRecording]);
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     if (captureMode === 'photo' && capturedPhoto) {
       const link = document.createElement('a');
       link.href = capturedPhoto;
@@ -111,9 +112,9 @@ export default function CameraApp() {
       link.click();
       document.body.removeChild(link);
     }
-  };
+  }, [captureMode, capturedPhoto, recordedVideo, currentEffect]);
 
-  const handleCancel = () => {
+  const handleCancel = useCallback(() => {
     setCapturedPhoto(null);
     setRecordedVideo(null);
     setIsPreviewMode(false);
@@ -123,11 +124,66 @@ export default function CameraApp() {
     if (recordedVideo) {
       URL.revokeObjectURL(recordedVideo);
     }
-  };
+  }, [recordedVideo]);
 
-  const toggleCaptureMode = () => {
+  const toggleCaptureMode = useCallback(() => {
     setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
-  };
+  }, []);
+
+  const handleToggleCamera = useCallback(async () => {
+    if (cameraState.isActive) {
+      stopCamera();
+    } else {
+      setIsLoading(true);
+      try {
+        await startCamera();
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  }, [cameraState.isActive, startCamera, stopCamera]);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Ignore if typing in input
+      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+
+      switch (event.code) {
+        case 'Space':
+          event.preventDefault();
+          if (!isPreviewMode) {
+            handleCapture();
+          }
+          break;
+        case 'KeyC':
+          event.preventDefault();
+          handleToggleCamera();
+          break;
+        case 'KeyV':
+          event.preventDefault();
+          toggleCaptureMode();
+          break;
+        case 'Escape':
+          event.preventDefault();
+          if (isPreviewMode) {
+            handleCancel();
+          }
+          break;
+        case 'Enter':
+          event.preventDefault();
+          if (isPreviewMode) {
+            handleDownload();
+          }
+          break;
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [handleCapture, handleToggleCamera, toggleCaptureMode, handleCancel, handleDownload, isPreviewMode]);
 
   return (
     <div className="flex flex-col h-screen">
@@ -149,8 +205,9 @@ export default function CameraApp() {
         onDownload={handleDownload}
         onCancel={handleCancel}
         onToggleCaptureMode={toggleCaptureMode}
-        onToggleCamera={cameraState.isActive ? stopCamera : () => startCamera()}
+        onToggleCamera={handleToggleCamera}
         onSwitchCamera={switchCamera}
+        isLoading={isLoading}
       />
     </div>
   );

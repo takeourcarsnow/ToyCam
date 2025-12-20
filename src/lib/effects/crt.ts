@@ -40,8 +40,8 @@ export function applyCRT(
         const dy = y - centerY;
         const distance = Math.sqrt(dx * dx + dy * dy);
 
-        // Apply barrel distortion
-        const distortion = 1 + (distance / maxRadius) * curvature;
+        // Apply pincushion distortion (inward curvature like real CRT TVs)
+        const distortion = 1 - (distance / maxRadius) * curvature;
         const sourceX = Math.round(centerX + dx / distortion);
         const sourceY = Math.round(centerY + dy / distortion);
 

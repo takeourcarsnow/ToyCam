@@ -11,7 +11,7 @@ A real-time camera effects application built with Next.js and TypeScript. Apply 
   - Pixelization
   - CRT Screen Effect
   - Vintage Film Effect
-  - Color Adjustments (Sepia, Grayscale, Invert)
+  - Color Adjustments (Grayscale, Invert)
 
 - **Adjustable Settings**: Fine-tune each effect with intuitive controls
 - **Light/Dark Themes**: Toggle between themes for comfortable viewing

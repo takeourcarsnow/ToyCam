@@ -1,6 +1,5 @@
 // Color palettes for different systems
 const PALETTES: Record<string, number[][]> = {
-  none: [], // Uses quantization
   gameboy: [
     [15, 56, 15],    // Dark green
     [48, 98, 48],    // Medium green
@@ -142,33 +141,31 @@ function findClosestPaletteColor(r: number, g: number, b: number, palette: numbe
 
 export function applyDithering(
   imageData: ImageData,
-  colors: number = 8,
   method: 'floyd-steinberg' | 'bayer' | 'atkinson' | 'ordered' | 'random' = 'floyd-steinberg',
   scale: number = 1,
-  palette: string = 'none'
+  palette: string = 'gameboy'
 ): ImageData {
-  const paletteColors = PALETTES[palette] || null;
+  const paletteColors = PALETTES[palette];
   
   switch (method) {
     case 'floyd-steinberg':
-      return floydSteinbergDithering(imageData, colors, scale, paletteColors);
+      return floydSteinbergDithering(imageData, scale, paletteColors);
     case 'atkinson':
-      return atkinsonDithering(imageData, colors, scale, paletteColors);
+      return atkinsonDithering(imageData, scale, paletteColors);
     case 'ordered':
-      return orderedDithering(imageData, colors, scale, paletteColors, 8);
+      return orderedDithering(imageData, scale, paletteColors, 8);
     case 'random':
-      return randomDithering(imageData, colors, scale, paletteColors);
+      return randomDithering(imageData, scale, paletteColors);
     case 'bayer':
     default:
-      return bayerDithering(imageData, colors, scale, paletteColors);
+      return bayerDithering(imageData, scale, paletteColors);
   }
 }
 
 function floydSteinbergDithering(
   imageData: ImageData,
-  colors: number,
   scale: number,
-  palette: number[][] | null
+  palette: number[][]
 ): ImageData {
   const data = imageData.data;
   const width = imageData.width;
@@ -182,19 +179,9 @@ function floydSteinbergDithering(
     for (let x = 0; x < width; x += step) {
       const idx = (y * width + x) * 4;
       
-      let newR: number, newG: number, newB: number;
-      
-      if (palette) {
-        // Use palette
-        const closest = findClosestPaletteColor(original[idx], original[idx + 1], original[idx + 2], palette);
-        [newR, newG, newB] = closest;
-      } else {
-        // Quantize each channel
-        const quantize = (val: number) => Math.round((val / 255) * (colors - 1)) / (colors - 1) * 255;
-        newR = quantize(original[idx]);
-        newG = quantize(original[idx + 1]);
-        newB = quantize(original[idx + 2]);
-      }
+      // Use palette
+      const closest = findClosestPaletteColor(original[idx], original[idx + 1], original[idx + 2], palette);
+      const [newR, newG, newB] = closest;
       
       const errorR = original[idx] - newR;
       const errorG = original[idx + 1] - newG;
@@ -246,9 +233,8 @@ function floydSteinbergDithering(
 
 function bayerDithering(
   imageData: ImageData,
-  colors: number,
   scale: number,
-  palette: number[][] | null
+  palette: number[][]
 ): ImageData {
   const data = imageData.data;
   const width = imageData.width;
@@ -267,24 +253,11 @@ function bayerDithering(
       const idx = (y * width + x) * 4;
       const threshold = (bayerMatrix[Math.floor(y / step) % 4][Math.floor(x / step) % 4] / 16 - 0.5);
       
-      let newR: number, newG: number, newB: number;
-      
-      if (palette) {
-        const adjustedR = Math.max(0, Math.min(255, data[idx] + threshold * 128));
-        const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + threshold * 128));
-        const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + threshold * 128));
-        const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
-        [newR, newG, newB] = closest;
-      } else {
-        const quantize = (val: number, thresh: number) => {
-          const adjusted = val / 255 + thresh / (colors - 1);
-          const colorLevel = Math.round(adjusted * (colors - 1));
-          return Math.max(0, Math.min(255, (colorLevel / (colors - 1)) * 255));
-        };
-        newR = quantize(data[idx], threshold);
-        newG = quantize(data[idx + 1], threshold);
-        newB = quantize(data[idx + 2], threshold);
-      }
+      const adjustedR = Math.max(0, Math.min(255, data[idx] + threshold * 128));
+      const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + threshold * 128));
+      const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + threshold * 128));
+      const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
+      const [newR, newG, newB] = closest;
       
       // Apply to block
       for (let dy = 0; dy < step && y + dy < height; dy++) {
@@ -303,9 +276,8 @@ function bayerDithering(
 
 function atkinsonDithering(
   imageData: ImageData,
-  colors: number,
   scale: number,
-  palette: number[][] | null
+  palette: number[][]
 ): ImageData {
   const data = imageData.data;
   const width = imageData.width;
@@ -317,17 +289,8 @@ function atkinsonDithering(
     for (let x = 0; x < width; x += step) {
       const idx = (y * width + x) * 4;
       
-      let newR: number, newG: number, newB: number;
-      
-      if (palette) {
-        const closest = findClosestPaletteColor(original[idx], original[idx + 1], original[idx + 2], palette);
-        [newR, newG, newB] = closest;
-      } else {
-        const quantize = (val: number) => Math.round((val / 255) * (colors - 1)) / (colors - 1) * 255;
-        newR = quantize(original[idx]);
-        newG = quantize(original[idx + 1]);
-        newB = quantize(original[idx + 2]);
-      }
+      const closest = findClosestPaletteColor(original[idx], original[idx + 1], original[idx + 2], palette);
+      const [newR, newG, newB] = closest;
       
       const errorR = original[idx] - newR;
       const errorG = original[idx + 1] - newG;
@@ -368,9 +331,8 @@ function atkinsonDithering(
 
 function orderedDithering(
   imageData: ImageData,
-  colors: number,
   scale: number,
-  palette: number[][] | null,
+  palette: number[][],
   matrixSize: number = 8
 ): ImageData {
   const data = imageData.data;
@@ -395,24 +357,11 @@ function orderedDithering(
       const idx = (y * width + x) * 4;
       const threshold = (matrix8x8[Math.floor(y / step) % 8][Math.floor(x / step) % 8] / 64 - 0.5);
       
-      let newR: number, newG: number, newB: number;
-      
-      if (palette) {
-        const adjustedR = Math.max(0, Math.min(255, data[idx] + threshold * 128));
-        const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + threshold * 128));
-        const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + threshold * 128));
-        const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
-        [newR, newG, newB] = closest;
-      } else {
-        const quantize = (val: number, thresh: number) => {
-          const adjusted = val / 255 + thresh / (colors - 1);
-          const colorLevel = Math.round(adjusted * (colors - 1));
-          return Math.max(0, Math.min(255, (colorLevel / (colors - 1)) * 255));
-        };
-        newR = quantize(data[idx], threshold);
-        newG = quantize(data[idx + 1], threshold);
-        newB = quantize(data[idx + 2], threshold);
-      }
+      const adjustedR = Math.max(0, Math.min(255, data[idx] + threshold * 128));
+      const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + threshold * 128));
+      const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + threshold * 128));
+      const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
+      const [newR, newG, newB] = closest;
       
       for (let dy = 0; dy < step && y + dy < height; dy++) {
         for (let dx = 0; dx < step && x + dx < width; dx++) {
@@ -430,9 +379,8 @@ function orderedDithering(
 
 function randomDithering(
   imageData: ImageData,
-  colors: number,
   scale: number,
-  palette: number[][] | null
+  palette: number[][]
 ): ImageData {
   const data = imageData.data;
   const width = imageData.width;
@@ -444,24 +392,11 @@ function randomDithering(
       const idx = (y * width + x) * 4;
       const noise = (Math.random() - 0.5) * 0.5;
       
-      let newR: number, newG: number, newB: number;
-      
-      if (palette) {
-        const adjustedR = Math.max(0, Math.min(255, data[idx] + noise * 128));
-        const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + noise * 128));
-        const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + noise * 128));
-        const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
-        [newR, newG, newB] = closest;
-      } else {
-        const quantize = (val: number) => {
-          const adjusted = val / 255 + noise / (colors - 1);
-          const colorLevel = Math.round(adjusted * (colors - 1));
-          return Math.max(0, Math.min(255, (colorLevel / (colors - 1)) * 255));
-        };
-        newR = quantize(data[idx]);
-        newG = quantize(data[idx + 1]);
-        newB = quantize(data[idx + 2]);
-      }
+      const adjustedR = Math.max(0, Math.min(255, data[idx] + noise * 128));
+      const adjustedG = Math.max(0, Math.min(255, data[idx + 1] + noise * 128));
+      const adjustedB = Math.max(0, Math.min(255, data[idx + 2] + noise * 128));
+      const closest = findClosestPaletteColor(adjustedR, adjustedG, adjustedB, palette);
+      const [newR, newG, newB] = closest;
       
       for (let dy = 0; dy < step && y + dy < height; dy++) {
         for (let dx = 0; dx < step && x + dx < width; dx++) {

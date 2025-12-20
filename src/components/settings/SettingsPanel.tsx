@@ -4,6 +4,7 @@ import type { EffectType, EffectSettings } from '@/types/effects';
 import { EFFECT_SETTINGS_CONFIG } from '@/lib/settingsConfig';
 import Slider from '../ui/Slider';
 import Select from '../ui/Select';
+import Toggle from '../ui/Toggle';
 
 interface SettingsPanelProps {
   currentEffect: EffectType;
@@ -50,6 +51,15 @@ export default function SettingsPanel({
                 value={currentSettings[setting.key]}
                 onChange={(v) => onSettingChange(currentEffect, setting.key, v)}
                 options={setting.options || []}
+              />
+            );
+          case 'toggle':
+            return (
+              <Toggle
+                key={setting.key}
+                label={setting.label}
+                value={currentSettings[setting.key]}
+                onChange={(v) => onSettingChange(currentEffect, setting.key, v)}
               />
             );
           case 'buttons':
