@@ -1,11 +1,12 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { EffectType, EffectSettings } from '@/types/effects';
-import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, HelpCircle } from 'lucide-react';
+import type { EffectType, EffectSettings, AspectRatio, OverlayType } from '@/types/effects';
+import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, HelpCircle, Aperture, Settings } from 'lucide-react';
 import { EFFECTS } from '@/lib/constants';
 import SettingsPanel from '../settings/SettingsPanel';
 import EffectButton from '../ui/EffectButton';
+import Select from '../ui/Select';
 
 interface CameraViewProps {
   videoRef: React.RefObject<HTMLVideoElement>;
@@ -13,6 +14,7 @@ interface CameraViewProps {
   cameraActive: boolean;
   error: string | null;
   currentEffect: EffectType;
+  activeEffects: Set<EffectType>;
   settings: EffectSettings;
   onSettingChange: (
     effect: EffectType,
@@ -32,6 +34,14 @@ interface CameraViewProps {
   onToggleCamera: () => void;
   onSwitchCamera: () => void;
   isLoading?: boolean;
+  aspectRatio: AspectRatio;
+  onAspectRatioChange: (ratio: AspectRatio) => void;
+  overlayType: OverlayType;
+  onOverlayChange: (overlay: OverlayType) => void;
+  rawMode: boolean;
+  onToggleRawMode: () => void;
+  showSettings: boolean;
+  onToggleSettings: () => void;
 }
 
 function CameraView({
@@ -40,6 +50,7 @@ function CameraView({
   cameraActive,
   error,
   currentEffect,
+  activeEffects,
   settings,
   onSettingChange,
   onEffectChange,
@@ -55,6 +66,14 @@ function CameraView({
   onToggleCamera,
   onSwitchCamera,
   isLoading = false,
+  aspectRatio,
+  onAspectRatioChange,
+  overlayType,
+  onOverlayChange,
+  rawMode,
+  onToggleRawMode,
+  showSettings,
+  onToggleSettings,
 }: CameraViewProps) {
   const [showHelp, setShowHelp] = useState(false);
 
@@ -70,15 +89,64 @@ function CameraView({
           >
             <HelpCircle className="w-5 h-5" />
           </button>
+
+          {cameraActive && activeEffects.size > 0 && (
+            <button
+              onClick={onToggleSettings}
+              className={`p-3 rounded-full hover:scale-110 active:scale-95 transition-all ${
+                showSettings ? 'bg-blue-500 text-white' : 'bg-black/50 backdrop-blur-sm text-white hover:bg-black/70'
+              }`}
+              title={showSettings ? 'Hide settings' : 'Show settings'}
+            >
+              <Settings className="w-5 h-5" />
+            </button>
+          )}
           
           {cameraActive && (
-            <button
-              onClick={onSwitchCamera}
-              className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
-              aria-label="Switch camera"
-            >
-              <SwitchCamera className="w-5 h-5" />
-            </button>
+            <>
+              <button
+                onClick={onSwitchCamera}
+                className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
+                aria-label="Switch camera"
+              >
+                <SwitchCamera className="w-5 h-5" />
+              </button>
+              
+              {/* Aspect ratio selector */}
+              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2">
+                <Select
+                  label=""
+                  value={aspectRatio}
+                  onChange={(value) => onAspectRatioChange(value as AspectRatio)}
+                  options={[
+                    { value: 'device', label: 'Device' },
+                    { value: '1:1', label: '1:1' },
+                    { value: '4:3', label: '4:3' },
+                    { value: '16:9', label: '16:9' },
+                    { value: '21:9', label: '21:9' },
+                    { value: '3:2', label: '3:2' },
+                    { value: '5:4', label: '5:4' },
+                  ]}
+                />
+              </div>
+              
+              {/* Overlay selector */}
+              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2">
+                <Select
+                  label=""
+                  value={overlayType}
+                  onChange={(value) => onOverlayChange(value as OverlayType)}
+                  options={[
+                    { value: 'none', label: 'No Overlay' },
+                    { value: 'rule-of-thirds', label: 'Rule of 3rds' },
+                    { value: 'golden-ratio', label: 'Golden Ratio' },
+                    { value: 'golden-spiral', label: 'Golden Spiral' },
+                    { value: 'diagonal', label: 'Diagonal' },
+                    { value: 'center-cross', label: 'Center Cross' },
+                  ]}
+                />
+              </div>
+            </>
           )}
           
           <button
@@ -148,7 +216,7 @@ function CameraView({
                 <EffectButton
                   icon={effect.icon}
                   label={effect.label}
-                  active={currentEffect === effect.type}
+                  active={effect.type === 'none' ? activeEffects.size === 0 : activeEffects.has(effect.type)}
                   onClick={() => onEffectChange(effect.type)}
                   compact
                 />
@@ -196,10 +264,11 @@ function CameraView({
       )}
       
       {/* Settings overlay */}
-      {cameraActive && currentEffect !== 'none' && !isPreviewMode && (
+      {cameraActive && activeEffects.size > 0 && !isPreviewMode && showSettings && (
         <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
           <SettingsPanel
             currentEffect={currentEffect}
+            activeEffects={activeEffects}
             settings={settings}
             onSettingChange={onSettingChange}
           />
@@ -214,6 +283,19 @@ function CameraView({
           title={`Switch to ${captureMode === 'photo' ? 'video' : 'photo'} mode`}
         >
           {captureMode === 'photo' ? <Video className="w-5 h-5" /> : <Image className="w-5 h-5" />}
+        </button>
+      )}
+
+      {/* Raw mode toggle */}
+      {cameraActive && !isPreviewMode && captureMode === 'photo' && (
+        <button
+          onClick={onToggleRawMode}
+          className={`absolute top-16 right-4 p-3 rounded-full hover:scale-110 active:scale-95 transition-all z-10 ${
+            rawMode ? 'bg-blue-500 text-white' : 'bg-black/50 backdrop-blur-sm text-white hover:bg-black/70'
+          }`}
+          title={rawMode ? 'Disable raw capture' : 'Enable raw capture (no effects)'}
+        >
+          <Aperture className="w-5 h-5" />
         </button>
       )}
 
@@ -270,28 +352,36 @@ function CameraView({
       {/* Help modal */}
       {showHelp && (
         <div className="absolute inset-0 bg-black/80 flex items-center justify-center z-30" onClick={() => setShowHelp(false)}>
-          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-lg font-bold mb-4 text-gray-900 dark:text-white">Keyboard Shortcuts</h3>
-            <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
+          <div className="bg-gray-900 text-white p-6 rounded-lg max-w-md mx-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-lg font-bold mb-4">Keyboard Shortcuts</h3>
+            <div className="space-y-2 text-sm">
               <div className="flex justify-between">
                 <span>Start/Stop Camera</span>
-                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">C</kbd>
+                <kbd className="bg-gray-700 px-2 py-1 rounded">C</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Capture Photo/Video</span>
-                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Space</kbd>
+                <kbd className="bg-gray-700 px-2 py-1 rounded">Space</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Switch Photo/Video</span>
-                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">V</kbd>
+                <kbd className="bg-gray-700 px-2 py-1 rounded">V</kbd>
+              </div>
+              <div className="flex justify-between">
+                <span>Toggle Settings</span>
+                <span className="text-xs text-gray-400">Settings icon</span>
+              </div>
+              <div className="flex justify-between">
+                <span>Clear All Effects</span>
+                <span className="text-xs text-gray-400">Click "None"</span>
               </div>
               <div className="flex justify-between">
                 <span>Download (in preview)</span>
-                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Enter</kbd>
+                <kbd className="bg-gray-700 px-2 py-1 rounded">Enter</kbd>
               </div>
               <div className="flex justify-between">
                 <span>Cancel (in preview)</span>
-                <kbd className="bg-gray-200 dark:bg-gray-700 px-2 py-1 rounded">Esc</kbd>
+                <kbd className="bg-gray-700 px-2 py-1 rounded">Esc</kbd>
               </div>
             </div>
             <button

@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
-import type { CameraState } from '@/types/effects';
+import type { CameraState, AspectRatio } from '@/types/effects';
 
-export function useCamera(resolution: 'low' | 'medium' | 'high' = 'high') {
+export function useCamera(aspectRatio: AspectRatio = '16:9') {
   const [cameraState, setCameraState] = useState<CameraState>({
     isActive: false,
     facingMode: 'user',
@@ -10,19 +10,28 @@ export function useCamera(resolution: 'low' | 'medium' | 'high' = 'high') {
   const [error, setError] = useState<string | null>(null);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  const getConstraints = (facingMode: 'user' | 'environment', res: 'low' | 'medium' | 'high') => {
-    const resolutions = {
-      low: { width: 640, height: 480 },
-      medium: { width: 1280, height: 720 },
-      high: { width: 1920, height: 1080 },
+  const getConstraints = (facingMode: 'user' | 'environment', aspectRatio: AspectRatio) => {
+    const aspectRatioValues = {
+      '1:1': 1,
+      '4:3': 4/3,
+      '16:9': 16/9,
+      '21:9': 21/9,
+      '3:2': 3/2,
+      '5:4': 5/4,
     };
-    const { width, height } = resolutions[res];
+    
+    const videoConstraints: any = {
+      facingMode,
+      width: { min: 640, ideal: 1280, max: 1920 },
+      height: { min: 480, ideal: 720, max: 1080 },
+    };
+    
+    if (aspectRatio !== 'device') {
+      videoConstraints.aspectRatio = { ideal: aspectRatioValues[aspectRatio] };
+    }
+    
     return {
-      video: {
-        facingMode,
-        width: { ideal: width },
-        height: { ideal: height },
-      },
+      video: videoConstraints,
       audio: false,
     };
   };
@@ -36,7 +45,7 @@ export function useCamera(resolution: 'low' | 'medium' | 'high' = 'high') {
         cameraState.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
 
-      const constraints = getConstraints(facingMode, resolution);
+      const constraints = getConstraints(facingMode, aspectRatio);
 
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
       
@@ -56,7 +65,7 @@ export function useCamera(resolution: 'low' | 'medium' | 'high' = 'high') {
       setError('Unable to access camera. Please check permissions.');
       setCameraState((prev: CameraState) => ({ ...prev, isActive: false }));
     }
-  }, [cameraState.stream, resolution]);
+  }, [cameraState.stream, aspectRatio]);
 
   const stopCamera = useCallback(() => {
     if (cameraState.stream) {

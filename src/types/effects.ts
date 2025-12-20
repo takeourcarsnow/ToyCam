@@ -9,6 +9,10 @@ export type EffectType =
   | 'invert'
   | 'film';
 
+export type AspectRatio = '1:1' | '4:3' | '16:9' | '21:9' | '3:2' | '5:4' | 'device';
+
+export type OverlayType = 'none' | 'rule-of-thirds' | 'golden-ratio' | 'golden-spiral' | 'diagonal' | 'center-cross';
+
 export interface EffectSettings {
   filmGrain: {
     intensity: number;

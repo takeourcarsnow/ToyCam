@@ -3,14 +3,16 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useCamera } from '@/hooks/useCamera';
 import { useEffects } from '@/hooks/useEffects';
-import type { EffectType, EffectSettings } from '@/types/effects';
+import type { EffectType, EffectSettings, AspectRatio, OverlayType } from '@/types/effects';
 import { defaultEffectSettings } from '@/types/effects';
 import CameraView from './CameraView';
 
 export default function CameraApp() {
-  const [resolution, setResolution] = useState<'low' | 'medium' | 'high'>('medium');
-  const { videoRef, cameraState, error, startCamera, stopCamera, switchCamera } = useCamera(resolution);
+  const [aspectRatio, setAspectRatio] = useState<AspectRatio>('16:9');
+  const [overlayType, setOverlayType] = useState<OverlayType>('none');
+  const { videoRef, cameraState, error, startCamera, stopCamera, switchCamera } = useCamera(aspectRatio);
   const [currentEffect, setCurrentEffect] = useState<EffectType>('none');
+  const [activeEffects, setActiveEffects] = useState<Set<EffectType>>(new Set());
   const [settings, setSettings] = useState<EffectSettings>(defaultEffectSettings);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
   const [isPreviewMode, setIsPreviewMode] = useState(false);
@@ -18,15 +20,52 @@ export default function CameraApp() {
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [captureMode, setCaptureMode] = useState<'photo' | 'video'>('photo');
   const [isLoading, setIsLoading] = useState(false);
+  const [rawMode, setRawMode] = useState(false);
+  const [showSettings, setShowSettings] = useState(true);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
   
-  const { canvasRef } = useEffects(videoRef, currentEffect, settings);
+  const { canvasRef } = useEffects(videoRef, activeEffects, settings, aspectRatio, overlayType);
 
   const handleEffectChange = useCallback((effect: EffectType) => {
-    setCurrentEffect(effect);
+    setActiveEffects(prev => {
+      if (effect === 'none') {
+        // Clicking "none" clears all effects
+        return new Set();
+      }
+      
+      const newSet = new Set(prev);
+      if (newSet.has(effect)) {
+        newSet.delete(effect);
+      } else {
+        newSet.add(effect);
+      }
+      return newSet;
+    });
   }, []);
+
+  const handleAspectRatioChange = useCallback(async (ratio: AspectRatio) => {
+    const wasActive = cameraState.isActive;
+    const facingMode = cameraState.facingMode;
+    
+    setAspectRatio(ratio);
+    
+    // If camera was active, restart it with new aspect ratio
+    if (wasActive) {
+      stopCamera();
+      // Small delay to ensure camera is fully stopped
+      setTimeout(() => {
+        startCamera(facingMode);
+      }, 100);
+    }
+  }, [cameraState.isActive, cameraState.facingMode, startCamera, stopCamera]);
+
+  const handleOverlayChange = useCallback((overlay: OverlayType) => {
+    setOverlayType(overlay);
+  }, []);
+
+  // Remove the separate useEffect for aspect ratio changes
 
   const handleSettingChange = useCallback((
     effect: EffectType,
@@ -44,12 +83,30 @@ export default function CameraApp() {
 
   const handleCapture = useCallback(() => {
     if (captureMode === 'photo') {
-      if (!canvasRef.current) return;
-      
-      const canvas = canvasRef.current;
-      const dataUrl = canvas.toDataURL('image/png');
-      setCapturedPhoto(dataUrl);
-      setIsPreviewMode(true);
+      if (rawMode) {
+        // Capture raw photo directly from video
+        const video = videoRef.current;
+        if (video) {
+          const canvas = document.createElement('canvas');
+          canvas.width = video.videoWidth;
+          canvas.height = video.videoHeight;
+          const ctx = canvas.getContext('2d');
+          if (ctx) {
+            ctx.drawImage(video, 0, 0);
+            const dataUrl = canvas.toDataURL('image/png');
+            setCapturedPhoto(dataUrl);
+            setIsPreviewMode(true);
+          }
+        }
+      } else {
+        // Capture with effects from canvas
+        if (!canvasRef.current) return;
+        
+        const canvas = canvasRef.current;
+        const dataUrl = canvas.toDataURL('image/png');
+        setCapturedPhoto(dataUrl);
+        setIsPreviewMode(true);
+      }
     } else {
       // Video recording
       if (isRecording) {
@@ -58,7 +115,7 @@ export default function CameraApp() {
         startRecording();
       }
     }
-  }, [captureMode, canvasRef, isRecording]);
+  }, [captureMode, rawMode, canvasRef, videoRef, isRecording]);
 
   const startRecording = useCallback(() => {
     if (!canvasRef.current || !cameraState.stream) return;
@@ -97,22 +154,23 @@ export default function CameraApp() {
   }, [isRecording]);
 
   const handleDownload = useCallback(() => {
+    const effectNames = Array.from(activeEffects).join('-') || 'none';
     if (captureMode === 'photo' && capturedPhoto) {
       const link = document.createElement('a');
       link.href = capturedPhoto;
-      link.download = `camera-effect-${currentEffect}-${Date.now()}.png`;
+      link.download = `camera-${rawMode ? 'raw' : 'effect'}-${effectNames}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     } else if (captureMode === 'video' && recordedVideo) {
       const link = document.createElement('a');
       link.href = recordedVideo;
-      link.download = `camera-effect-${currentEffect}-${Date.now()}.webm`;
+      link.download = `camera-effect-${effectNames}-${Date.now()}.webm`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
-  }, [captureMode, capturedPhoto, recordedVideo, currentEffect]);
+  }, [captureMode, capturedPhoto, recordedVideo, activeEffects, rawMode]);
 
   const handleCancel = useCallback(() => {
     setCapturedPhoto(null);
@@ -128,6 +186,14 @@ export default function CameraApp() {
 
   const toggleCaptureMode = useCallback(() => {
     setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
+  }, []);
+
+  const toggleRawMode = useCallback(() => {
+    setRawMode(prev => !prev);
+  }, []);
+
+  const toggleSettings = useCallback(() => {
+    setShowSettings(prev => !prev);
   }, []);
 
   const handleToggleCamera = useCallback(async () => {
@@ -193,6 +259,7 @@ export default function CameraApp() {
         cameraActive={cameraState.isActive}
         error={error}
         currentEffect={currentEffect}
+        activeEffects={activeEffects}
         settings={settings}
         onSettingChange={handleSettingChange}
         onEffectChange={handleEffectChange}
@@ -208,6 +275,14 @@ export default function CameraApp() {
         onToggleCamera={handleToggleCamera}
         onSwitchCamera={switchCamera}
         isLoading={isLoading}
+        aspectRatio={aspectRatio}
+        onAspectRatioChange={handleAspectRatioChange}
+        overlayType={overlayType}
+        onOverlayChange={handleOverlayChange}
+        rawMode={rawMode}
+        onToggleRawMode={toggleRawMode}
+        showSettings={showSettings}
+        onToggleSettings={toggleSettings}
       />
     </div>
   );

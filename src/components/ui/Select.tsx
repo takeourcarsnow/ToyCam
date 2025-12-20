@@ -1,7 +1,7 @@
 'use client';
 
 interface SelectProps {
-  label: string;
+  label?: string;
   value: string;
   onChange: (value: string) => void;
   options: { value: string; label: string }[];
@@ -9,10 +9,12 @@ interface SelectProps {
 
 export default function Select({ label, value, onChange, options }: SelectProps) {
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium text-white">
-        {label}
-      </label>
+    <div className={label ? "space-y-2" : ""}>
+      {label && (
+        <label className="text-sm font-medium text-white">
+          {label}
+        </label>
+      )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
