@@ -1,0 +1,257 @@
+'use client';
+
+import type { EffectType, EffectSettings } from '@/types/effects';
+import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, Moon, Sun } from 'lucide-react';
+import { EFFECTS } from '@/lib/constants';
+import SettingsPanel from '../settings/SettingsPanel';
+import EffectButton from '../ui/EffectButton';
+import { useTheme } from '../ThemeProvider';
+
+interface CameraViewProps {
+  videoRef: React.RefObject<HTMLVideoElement>;
+  canvasRef: React.RefObject<HTMLCanvasElement>;
+  cameraActive: boolean;
+  error: string | null;
+  currentEffect: EffectType;
+  settings: EffectSettings;
+  onSettingChange: (
+    effect: EffectType,
+    key: string,
+    value: any
+  ) => void;
+  onEffectChange: (effect: EffectType) => void;
+  capturedPhoto: string | null;
+  recordedVideo: string | null;
+  isPreviewMode: boolean;
+  isRecording: boolean;
+  captureMode: 'photo' | 'video';
+  onCapture: () => void;
+  onDownload: () => void;
+  onCancel: () => void;
+  onToggleCaptureMode: () => void;
+  onToggleCamera: () => void;
+  onSwitchCamera: () => void;
+}
+
+export default function CameraView({
+  videoRef,
+  canvasRef,
+  cameraActive,
+  error,
+  currentEffect,
+  settings,
+  onSettingChange,
+  onEffectChange,
+  capturedPhoto,
+  recordedVideo,
+  isPreviewMode,
+  isRecording,
+  captureMode,
+  onCapture,
+  onDownload,
+  onCancel,
+  onToggleCaptureMode,
+  onToggleCamera,
+  onSwitchCamera,
+}: CameraViewProps) {
+  const { theme, toggleTheme } = useTheme();
+
+  return (
+    <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
+      {/* Camera controls overlay */}
+      {!isPreviewMode && (
+        <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+          <button
+            onClick={toggleTheme}
+            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors"
+            aria-label="Toggle theme"
+          >
+            {theme === 'light' ? (
+              <Moon className="w-5 h-5" />
+            ) : (
+              <Sun className="w-5 h-5" />
+            )}
+          </button>
+          
+          {cameraActive && (
+            <button
+              onClick={onSwitchCamera}
+              className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors"
+              aria-label="Switch camera"
+            >
+              <SwitchCamera className="w-5 h-5" />
+            </button>
+          )}
+          
+          <button
+            onClick={onToggleCamera}
+            className={`p-3 rounded-full transition-colors ${
+              cameraActive
+                ? 'bg-red-500 hover:bg-red-600 text-white'
+                : 'bg-blue-500 hover:bg-blue-600 text-white'
+            }`}
+            aria-label={cameraActive ? 'Stop camera' : 'Start camera'}
+          >
+            {cameraActive ? (
+              <CameraOff className="w-5 h-5" />
+            ) : (
+              <Camera className="w-5 h-5" />
+            )}
+          </button>
+        </div>
+      )}
+      {/* Hidden video element */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className="hidden"
+        onLoadedMetadata={(e) => {
+          const video = e.currentTarget;
+          video.play().catch(err => console.error('Video play error:', err));
+        }}
+      />
+      
+      {/* Canvas for effects */}
+      <canvas
+        ref={canvasRef}
+        className={`w-full h-full object-contain ${
+          cameraActive ? 'block' : 'hidden'
+        }`}
+        style={{ maxWidth: '100%', maxHeight: '100%' }}
+      />
+      
+      {/* Captured photo/video preview */}
+      {isPreviewMode && (capturedPhoto || recordedVideo) && (
+        <div className="absolute inset-0 bg-black flex items-center justify-center">
+          {capturedPhoto ? (
+            <img
+              src={capturedPhoto}
+              alt="Captured photo"
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : recordedVideo ? (
+            <video
+              src={recordedVideo}
+              controls
+              className="max-w-full max-h-full object-contain"
+            />
+          ) : null}
+        </div>
+      )}
+      
+      {/* Effects buttons overlay */}
+      {cameraActive && !isPreviewMode && (
+        <div className="absolute top-20 left-4 right-4 z-10">
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {EFFECTS.map((effect) => (
+              <div key={effect.type} className="flex-shrink-0">
+                <EffectButton
+                  icon={effect.icon}
+                  label={effect.label}
+                  active={currentEffect === effect.type}
+                  onClick={() => onEffectChange(effect.type)}
+                  compact
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* Placeholder when camera is off */}
+      {!cameraActive && !error && (
+        <div 
+          className="text-center text-white/60 p-8 cursor-pointer hover:text-white/80 transition-colors"
+          onClick={onToggleCamera}
+        >
+          <Camera className="w-24 h-24 mx-auto mb-4 opacity-30 hover:opacity-50 transition-opacity" />
+          <p className="text-lg">Camera is off</p>
+          <p className="text-sm mt-2">Tap here or the camera button to start</p>
+        </div>
+      )}
+      
+      {/* Error message */}
+      {error && (
+        <div className="text-center text-red-400 p-8">
+          <AlertCircle className="w-16 h-16 mx-auto mb-4" />
+          <p className="text-lg">{error}</p>
+          <p className="text-sm mt-2">Please allow camera access in your browser settings</p>
+        </div>
+      )}
+      
+      {/* Settings overlay */}
+      {cameraActive && currentEffect !== 'none' && !isPreviewMode && (
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+          <SettingsPanel
+            currentEffect={currentEffect}
+            settings={settings}
+            onSettingChange={onSettingChange}
+          />
+        </div>
+      )}
+      
+      {/* Capture mode toggle */}
+      {cameraActive && !isPreviewMode && (
+        <button
+          onClick={onToggleCaptureMode}
+          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 transition-colors z-10"
+          title={`Switch to ${captureMode === 'photo' ? 'video' : 'photo'} mode`}
+        >
+          {captureMode === 'photo' ? <Video className="w-5 h-5" /> : <Image className="w-5 h-5" />}
+        </button>
+      )}
+
+      {/* Capture button */}
+      {cameraActive && !isPreviewMode && (
+        <button
+          onClick={onCapture}
+          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 shadow-lg hover:scale-110 transition-transform z-20 ${
+            captureMode === 'photo'
+              ? 'bg-white border-white/20'
+              : isRecording
+                ? 'bg-red-500 border-red-600 animate-pulse'
+                : 'bg-white border-white/20'
+          }`}
+        >
+          {captureMode === 'photo' ? (
+            <div className="w-6 h-6 bg-gray-800 rounded-full mx-auto"></div>
+          ) : (
+            <div className={`w-6 h-6 mx-auto rounded-sm ${
+              isRecording ? 'bg-white' : 'bg-red-500'
+            }`}></div>
+          )}
+        </button>
+      )}
+
+      {/* Recording indicator */}
+      {isRecording && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 z-20">
+          <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+          Recording
+        </div>
+      )}
+
+      {/* Photo/video preview controls */}
+      {isPreviewMode && (
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-20">
+          <button
+            onClick={onDownload}
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-full font-medium transition-colors"
+          >
+            <Download className="w-5 h-5" />
+            Download
+          </button>
+          <button
+            onClick={onCancel}
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full font-medium transition-colors"
+          >
+            <X className="w-5 h-5" />
+            Cancel
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
