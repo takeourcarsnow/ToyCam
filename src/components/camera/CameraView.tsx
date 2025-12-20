@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import type { EffectType, EffectSettings, AspectRatio, OverlayType } from '@/types/effects';
-import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, HelpCircle, Aperture, Settings } from 'lucide-react';
+import { Camera, AlertCircle, Download, X, Video, Image, CameraOff, SwitchCamera, HelpCircle, Settings } from 'lucide-react';
 import { EFFECTS } from '@/lib/constants';
 import SettingsPanel from '../settings/SettingsPanel';
 import EffectButton from '../ui/EffectButton';
@@ -38,8 +38,6 @@ interface CameraViewProps {
   onAspectRatioChange: (ratio: AspectRatio) => void;
   overlayType: OverlayType;
   onOverlayChange: (overlay: OverlayType) => void;
-  rawMode: boolean;
-  onToggleRawMode: () => void;
   showSettings: boolean;
   onToggleSettings: () => void;
 }
@@ -70,8 +68,6 @@ function CameraView({
   onAspectRatioChange,
   overlayType,
   onOverlayChange,
-  rawMode,
-  onToggleRawMode,
   showSettings,
   onToggleSettings,
 }: CameraViewProps) {
@@ -283,19 +279,6 @@ function CameraView({
           title={`Switch to ${captureMode === 'photo' ? 'video' : 'photo'} mode`}
         >
           {captureMode === 'photo' ? <Video className="w-5 h-5" /> : <Image className="w-5 h-5" />}
-        </button>
-      )}
-
-      {/* Raw mode toggle */}
-      {cameraActive && !isPreviewMode && captureMode === 'photo' && (
-        <button
-          onClick={onToggleRawMode}
-          className={`absolute top-16 right-4 p-3 rounded-full hover:scale-110 active:scale-95 transition-all z-10 ${
-            rawMode ? 'bg-blue-500 text-white' : 'bg-black/50 backdrop-blur-sm text-white hover:bg-black/70'
-          }`}
-          title={rawMode ? 'Disable raw capture' : 'Enable raw capture (no effects)'}
-        >
-          <Aperture className="w-5 h-5" />
         </button>
       )}
 

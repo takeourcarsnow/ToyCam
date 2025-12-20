@@ -20,7 +20,6 @@ export default function CameraApp() {
   const [recordedVideo, setRecordedVideo] = useState<string | null>(null);
   const [captureMode, setCaptureMode] = useState<'photo' | 'video'>('photo');
   const [isLoading, setIsLoading] = useState(false);
-  const [rawMode, setRawMode] = useState(false);
   const [showSettings, setShowSettings] = useState(true);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -83,30 +82,13 @@ export default function CameraApp() {
 
   const handleCapture = useCallback(() => {
     if (captureMode === 'photo') {
-      if (rawMode) {
-        // Capture raw photo directly from video
-        const video = videoRef.current;
-        if (video) {
-          const canvas = document.createElement('canvas');
-          canvas.width = video.videoWidth;
-          canvas.height = video.videoHeight;
-          const ctx = canvas.getContext('2d');
-          if (ctx) {
-            ctx.drawImage(video, 0, 0);
-            const dataUrl = canvas.toDataURL('image/png');
-            setCapturedPhoto(dataUrl);
-            setIsPreviewMode(true);
-          }
-        }
-      } else {
-        // Capture with effects from canvas
-        if (!canvasRef.current) return;
-        
-        const canvas = canvasRef.current;
-        const dataUrl = canvas.toDataURL('image/png');
-        setCapturedPhoto(dataUrl);
-        setIsPreviewMode(true);
-      }
+      // Capture with effects from canvas
+      if (!canvasRef.current) return;
+      
+      const canvas = canvasRef.current;
+      const dataUrl = canvas.toDataURL('image/png');
+      setCapturedPhoto(dataUrl);
+      setIsPreviewMode(true);
     } else {
       // Video recording
       if (isRecording) {
@@ -115,7 +97,7 @@ export default function CameraApp() {
         startRecording();
       }
     }
-  }, [captureMode, rawMode, canvasRef, videoRef, isRecording]);
+  }, [captureMode, canvasRef, isRecording]);
 
   const startRecording = useCallback(() => {
     if (!canvasRef.current || !cameraState.stream) return;
@@ -158,7 +140,7 @@ export default function CameraApp() {
     if (captureMode === 'photo' && capturedPhoto) {
       const link = document.createElement('a');
       link.href = capturedPhoto;
-      link.download = `camera-${rawMode ? 'raw' : 'effect'}-${effectNames}-${Date.now()}.png`;
+      link.download = `camera-effect-${effectNames}-${Date.now()}.png`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -170,7 +152,7 @@ export default function CameraApp() {
       link.click();
       document.body.removeChild(link);
     }
-  }, [captureMode, capturedPhoto, recordedVideo, activeEffects, rawMode]);
+  }, [captureMode, capturedPhoto, recordedVideo, activeEffects]);
 
   const handleCancel = useCallback(() => {
     setCapturedPhoto(null);
@@ -186,10 +168,6 @@ export default function CameraApp() {
 
   const toggleCaptureMode = useCallback(() => {
     setCaptureMode(prev => prev === 'photo' ? 'video' : 'photo');
-  }, []);
-
-  const toggleRawMode = useCallback(() => {
-    setRawMode(prev => !prev);
   }, []);
 
   const toggleSettings = useCallback(() => {
@@ -279,8 +257,6 @@ export default function CameraApp() {
         onAspectRatioChange={handleAspectRatioChange}
         overlayType={overlayType}
         onOverlayChange={handleOverlayChange}
-        rawMode={rawMode}
-        onToggleRawMode={toggleRawMode}
         showSettings={showSettings}
         onToggleSettings={toggleSettings}
       />
