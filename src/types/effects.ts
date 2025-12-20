@@ -7,7 +7,9 @@ export type EffectType =
   | 'crt'
   | 'vintage'
   | 'invert'
-  | 'film';
+  | 'film'
+  | 'lightLeak'
+  | 'frame';
 
 export type AspectRatio = '1:1' | '4:3' | '16:9' | '21:9' | '3:2' | '5:4' | 'device';
 
@@ -45,6 +47,15 @@ export interface EffectSettings {
   film: {
     mode: 'tmax' | 'portra' | 'ektar' | 'provia' | 'trix' | 'hp5';
     intensity: number;
+  };
+  lightLeak: {
+    intensity: number;
+    color: 'orange' | 'purple' | 'blue' | 'green' | 'pink';
+    position: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'center';
+  };
+  frame: {
+    thickness: number;
+    color: string;
   };
 }
 
@@ -86,5 +97,14 @@ export const defaultEffectSettings: EffectSettings = {
   film: {
     mode: 'portra',
     intensity: 1,
+  },
+  lightLeak: {
+    intensity: 0.3,
+    color: 'orange',
+    position: 'top-left',
+  },
+  frame: {
+    thickness: 20,
+    color: '#ffffff',
   },
 };

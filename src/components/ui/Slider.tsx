@@ -12,23 +12,23 @@ interface SliderProps {
 export default function Slider({ label, value, onChange, min, max, step }: SliderProps) {
   return (
     <div className="space-y-2">
-      <div className="flex justify-between items-center">
-        <label className="text-sm font-medium text-white">
+      <div className="flex items-center gap-3">
+        <label className="text-sm font-medium text-white flex-shrink-0 min-w-0">
           {label}
         </label>
-        <span className="text-sm text-white/80">
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="flex-1 h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
+        />
+        <span className="text-sm text-white/80 flex-shrink-0 min-w-[3rem] text-right">
           {value.toFixed(step < 1 ? 2 : 0)}
         </span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
-      />
       <style jsx>{`
         .slider::-webkit-slider-thumb {
           appearance: none;

@@ -7,6 +7,8 @@ import { applyCRT } from './crt';
 import { applyVintage } from './vintage';
 import { applyGrayscale, applyInvert } from './colorFilters';
 import { applyTMax, applyPortra, applyEktar, applyProvia, applyTriX, applyHP5 } from './filmFilters';
+import { applyLightLeak } from './lightLeak';
+import { applyFrame } from './frame';
 
 export interface EffectFunction {
   apply: (imageData: ImageData, settings: any, canvas?: HTMLCanvasElement) => ImageData | void;
@@ -83,5 +85,18 @@ export const EFFECT_FUNCTIONS: Record<Exclude<EffectType, 'none'>, EffectFunctio
           return imageData;
       }
     },
+  },
+  lightLeak: {
+    apply: (imageData, settings) => {
+      return applyLightLeak(imageData, settings.intensity, settings.color, settings.position);
+    },
+  },
+  frame: {
+    apply: (imageData, settings, canvas) => {
+      if (canvas) {
+        applyFrame(canvas, imageData, settings.thickness, settings.color);
+      }
+    },
+    usesCanvas: true,
   },
 };

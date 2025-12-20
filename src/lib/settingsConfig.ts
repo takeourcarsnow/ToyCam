@@ -173,4 +173,62 @@ export const EFFECT_SETTINGS_CONFIG: Record<Exclude<EffectType, 'none'>, Setting
       step: 0.05,
     },
   ],
+  lightLeak: [
+    {
+      type: 'slider',
+      label: 'Intensity',
+      key: 'intensity',
+      min: 0,
+      max: 1,
+      step: 0.05,
+    },
+    {
+      type: 'buttons',
+      label: 'Color',
+      key: 'color',
+      options: [
+        { value: 'orange', label: 'Orange' },
+        { value: 'purple', label: 'Purple' },
+        { value: 'blue', label: 'Blue' },
+        { value: 'green', label: 'Green' },
+        { value: 'pink', label: 'Pink' },
+      ],
+    },
+    {
+      type: 'buttons',
+      label: 'Position',
+      key: 'position',
+      options: [
+        { value: 'top-left', label: 'Top Left' },
+        { value: 'top-right', label: 'Top Right' },
+        { value: 'bottom-left', label: 'Bottom Left' },
+        { value: 'bottom-right', label: 'Bottom Right' },
+        { value: 'center', label: 'Center' },
+      ],
+    },
+  ],
+  frame: [
+    {
+      type: 'slider',
+      label: 'Thickness',
+      key: 'thickness',
+      min: 5,
+      max: 50,
+      step: 1,
+    },
+    {
+      type: 'select',
+      label: 'Color',
+      key: 'color',
+      options: [
+        { value: '#ffffff', label: 'White' },
+        { value: '#000000', label: 'Black' },
+        { value: '#8B4513', label: 'Brown' },
+        { value: '#DAA520', label: 'Gold' },
+        { value: '#C0C0C0', label: 'Silver' },
+        { value: '#FF6B6B', label: 'Red' },
+        { value: '#4ECDC4', label: 'Teal' },
+      ],
+    },
+  ],
 };

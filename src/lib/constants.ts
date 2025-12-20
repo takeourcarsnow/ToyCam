@@ -1,7 +1,7 @@
 import type { EffectType } from '@/types/effects';
 import {
   Sparkles, Grid3x3, Type, Square, Monitor, Film,
-  Palette, Eye, Camera, Aperture, Circle
+  Palette, Eye, Camera, Aperture, Circle, Sun, Frame
 } from 'lucide-react';
 
 export interface EffectDefinition {
@@ -20,4 +20,6 @@ export const EFFECTS: EffectDefinition[] = [
   { type: 'crt', label: 'CRT', icon: Monitor },
   { type: 'vintage', label: 'Vintage', icon: Film },
   { type: 'invert', label: 'Invert', icon: Palette },
+  { type: 'lightLeak', label: 'Light Leak', icon: Sun },
+  { type: 'frame', label: 'Frame', icon: Frame },
 ];

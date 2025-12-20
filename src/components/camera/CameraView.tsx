@@ -90,7 +90,7 @@ function CameraView({
             <HelpCircle className="w-5 h-5" />
           </button>
 
-          {cameraActive && activeEffects.size > 0 && (
+          {cameraActive && (
             <button
               onClick={onToggleSettings}
               className={`p-3 rounded-full hover:scale-110 active:scale-95 transition-all ${
@@ -208,7 +208,7 @@ function CameraView({
       )}
       
       {/* Effects buttons overlay */}
-      {cameraActive && !isPreviewMode && (
+      {cameraActive && !isPreviewMode && showSettings && (
         <div className="absolute top-20 left-4 right-4 z-10">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {EFFECTS.map((effect) => (
