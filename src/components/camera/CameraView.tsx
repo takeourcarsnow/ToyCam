@@ -261,7 +261,7 @@ function CameraView({
       
       {/* Settings overlay */}
       {cameraActive && activeEffects.size > 0 && !isPreviewMode && showSettings && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 max-h-[50vh] overflow-y-auto">
           <SettingsPanel
             currentEffect={currentEffect}
             activeEffects={activeEffects}
