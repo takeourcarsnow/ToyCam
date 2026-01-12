@@ -26,8 +26,10 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className="antialiased">
-        {children}
+      <body className="antialiased h-screen overflow-hidden">
+        <div className="h-full flex flex-col">
+          {children}
+        </div>
       </body>
     </html>
   );

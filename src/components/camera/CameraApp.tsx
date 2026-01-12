@@ -230,7 +230,7 @@ export default function CameraApp() {
   }, [handleCapture, handleToggleCamera, toggleCaptureMode, handleCancel, handleDownload, isPreviewMode]);
 
   return (
-    <div className="flex flex-col h-screen">
+    <div className="flex flex-col h-full">
       <CameraView
         videoRef={videoRef}
         canvasRef={canvasRef}

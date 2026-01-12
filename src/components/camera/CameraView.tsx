@@ -205,7 +205,7 @@ function CameraView({
       
       {/* Effects buttons overlay */}
       {cameraActive && !isPreviewMode && showSettings && (
-        <div className="absolute top-20 left-4 right-4 z-10">
+        <div className="absolute top-16 sm:top-20 left-4 right-4 z-10">
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {EFFECTS.map((effect) => (
               <div key={effect.type} className="flex-shrink-0">
@@ -261,7 +261,7 @@ function CameraView({
       
       {/* Settings overlay */}
       {cameraActive && activeEffects.size > 0 && !isPreviewMode && showSettings && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 max-h-[50vh] overflow-y-auto">
+        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto">
           <SettingsPanel
             currentEffect={currentEffect}
             activeEffects={activeEffects}
@@ -286,7 +286,7 @@ function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onCapture}
-          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-16 h-16 rounded-full border-4 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
+          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
             captureMode === 'photo'
               ? 'bg-white border-white/20'
               : isRecording
@@ -295,9 +295,9 @@ function CameraView({
           }`}
         >
           {captureMode === 'photo' ? (
-            <div className="w-6 h-6 bg-gray-800 rounded-full mx-auto"></div>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-800 rounded-full mx-auto"></div>
           ) : (
-            <div className={`w-6 h-6 mx-auto rounded-sm ${
+            <div className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto rounded-sm ${
               isRecording ? 'bg-white' : 'bg-red-500'
             }`}></div>
           )}

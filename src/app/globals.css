@@ -62,3 +62,19 @@ body {
 * {
   transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
 }
+
+/* Mobile: prevent page-level scrollbars while keeping internal panels scrollable */
+@media (max-width: 640px) {
+  html, body, #__next {
+    height: 100%;
+  }
+
+  body {
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  main, .app-root {
+    height: 100%;
+  }
+}
