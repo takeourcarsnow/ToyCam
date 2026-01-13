@@ -286,8 +286,7 @@ function CameraView({
         <button
           onClick={onCapture}
           aria-label="Capture"
-          style={{ bottom: '0.5rem' }}
-          className={`absolute left-1/2 transform -translate-x-1/2 w-8 h-8 rounded-full border shadow hover:scale-105 transition-all z-50 sm:w-10 sm:h-10 sm:bottom-1 ${
+          className={`absolute left-1/2 transform -translate-x-1/2 bottom-4 w-8 h-8 rounded-full border shadow hover:scale-105 transition-all z-50 sm:w-10 sm:h-10 ${
             captureMode === 'photo'
               ? 'bg-white border-gray-300'
               : isRecording
