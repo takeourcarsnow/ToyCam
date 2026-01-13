@@ -286,21 +286,9 @@ function CameraView({
         <button
           onClick={onCapture}
           aria-label="Capture"
-          className={`absolute left-1/2 transform -translate-x-1/2 bottom-4 w-8 h-8 rounded-full border shadow hover:scale-105 transition-all z-50 sm:w-10 sm:h-10 ${
-            captureMode === 'photo'
-              ? 'bg-white border-gray-300'
-              : isRecording
-                ? 'bg-red-600 border-red-700 animate-pulse'
-                : 'bg-white border-gray-300'
-          }`}
+          className="absolute left-1/2 transform -translate-x-1/2 bottom-8 w-16 h-16 rounded-full bg-white border-2 border-gray-300 shadow-lg hover:scale-105 transition-all z-50"
         >
-          {captureMode === 'photo' ? (
-            <div className="w-3 h-3 bg-gray-800 rounded-full mx-auto sm:w-4 sm:h-4"></div>
-          ) : (
-            <div className={`w-3 h-3 mx-auto rounded-sm sm:w-4 sm:h-4 ${
-              isRecording ? 'bg-white' : 'bg-red-600'
-            }`}></div>
-          )}
+          <div className="w-6 h-6 bg-gray-800 rounded-full mx-auto"></div>
         </button>
       )}
 
