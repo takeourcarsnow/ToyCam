@@ -287,7 +287,9 @@ function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onCapture}
-          className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
+          aria-label="Capture"
+          style={{ bottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}
+          className={`absolute left-1/2 transform -translate-x-1/2 w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 shadow-lg hover:scale-110 active:scale-95 transition-all z-50 ${
             captureMode === 'photo'
               ? 'bg-white border-white/20'
               : isRecording
@@ -296,9 +298,9 @@ function CameraView({
           }`}
         >
           {captureMode === 'photo' ? (
-            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-800 rounded-full mx-auto"></div>
+            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-800 rounded-full mx-auto"></div>
           ) : (
-            <div className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto rounded-sm ${
+            <div className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto rounded-sm ${
               isRecording ? 'bg-white' : 'bg-red-500'
             }`}></div>
           )}

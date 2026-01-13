@@ -20,8 +20,9 @@ export function useCamera(aspectRatio: AspectRatio = '16:9') {
       '5:4': 5/4,
     };
     
+    // Use an object with `ideal` for facingMode to improve cross-browser compatibility
     const videoConstraints: any = {
-      facingMode,
+      facingMode: { ideal: facingMode },
       width: { min: 640, ideal: 1280, max: 1920 },
       height: { min: 480, ideal: 720, max: 1080 },
     };
@@ -45,10 +46,32 @@ export function useCamera(aspectRatio: AspectRatio = '16:9') {
         cameraState.stream.getTracks().forEach((track: MediaStreamTrack) => track.stop());
       }
 
-      const constraints = getConstraints(facingMode, aspectRatio);
+      // Try with an `ideal` facingMode first (more compatible across browsers)
+      let constraints = getConstraints(facingMode, aspectRatio);
+      let stream: MediaStream | null = null;
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+      try {
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
+      } catch (e) {
+        console.warn('getUserMedia with ideal facingMode failed:', e);
+        // Some mobile browsers (notably iOS Safari) require `exact: 'environment'` for the rear camera
+        if (facingMode === 'environment') {
+          try {
+            constraints = {
+              video: { facingMode: { exact: 'environment' }, width: { min: 640, ideal: 1280, max: 1920 }, height: { min: 480, ideal: 720, max: 1080 } },
+              audio: false,
+            };
+            stream = await navigator.mediaDevices.getUserMedia(constraints);
+          } catch (err2) {
+            console.warn('getUserMedia with exact environment failed:', err2);
+          }
+        }
+      }
+
+      if (!stream) {
+        throw new Error('Unable to acquire requested camera');
+      }
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
         // Ensure video plays
@@ -62,7 +85,7 @@ export function useCamera(aspectRatio: AspectRatio = '16:9') {
       });
     } catch (err) {
       console.error('Error accessing camera:', err);
-      setError('Unable to access camera. Please check permissions.');
+      setError('Unable to access camera. Please check permissions or try switching cameras.');
       setCameraState((prev: CameraState) => ({ ...prev, isActive: false }));
     }
   }, [cameraState.stream, aspectRatio]);
