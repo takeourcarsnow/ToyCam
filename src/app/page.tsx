@@ -8,7 +8,7 @@ const CameraApp = dynamic(() => import("@/components/camera/CameraApp"), {
 
 export default function Home() {
   return (
-    <main className="h-full bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-black">
+    <main className="h-full bg-black">
       <CameraApp />
     </main>
   );

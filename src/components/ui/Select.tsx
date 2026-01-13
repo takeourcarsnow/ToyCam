@@ -9,16 +9,16 @@ interface SelectProps {
 
 export default function Select({ label, value, onChange, options }: SelectProps) {
   return (
-    <div className={label ? "space-y-2" : ""}>
+    <div className={label ? "space-y-1" : ""}>
       {label && (
-        <label className="text-sm font-medium text-white">
+        <label className="text-xs text-white">
           {label}
         </label>
       )}
       <select
         value={value}
         onChange={(e) => onChange(e.target.value)}
-        className="w-full px-2 py-1 bg-black/50 backdrop-blur-sm border border-white/20 rounded-lg text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+        className="w-full px-1 py-0.5 bg-gray-700 border border-gray-600 rounded text-white text-xs focus:outline-none focus:ring-1 focus:ring-blue-500"
       >
         {options.map((option) => (
           <option key={option.value} value={option.value}>
