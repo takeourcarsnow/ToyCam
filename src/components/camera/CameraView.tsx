@@ -260,7 +260,7 @@ function CameraView({
       
       {/* Settings overlay */}
       {cameraActive && activeEffects.size > 0 && !isPreviewMode && showSettings && (
-        <div className="absolute bottom-12 left-0 right-0 bg-black/80 p-2 max-h-24 overflow-y-auto">
+        <div className="absolute bottom-16 left-0 right-0 bg-black/80 p-2 max-h-24 overflow-y-auto sm:bottom-12">
           <SettingsPanel
             currentEffect={currentEffect}
             activeEffects={activeEffects}
@@ -286,7 +286,7 @@ function CameraView({
         <button
           onClick={onCapture}
           aria-label="Capture"
-          className="absolute left-1/2 transform -translate-x-1/2 bottom-8 w-16 h-16 rounded-full bg-white border-2 border-gray-300 shadow-lg hover:scale-105 transition-all z-50"
+          className="absolute left-1/2 transform -translate-x-1/2 bottom-20 w-16 h-16 rounded-full bg-white border-2 border-gray-300 shadow-lg hover:scale-105 transition-all z-50 sm:bottom-8"
         >
           <div className="w-6 h-6 bg-gray-800 rounded-full mx-auto"></div>
         </button>
@@ -302,7 +302,7 @@ function CameraView({
 
       {/* Photo/video preview controls */}
       {isPreviewMode && (
-        <div className="absolute bottom-1 left-0 right-0 flex justify-center gap-1 z-20 sm:bottom-2 sm:gap-2">
+        <div className="absolute bottom-16 left-0 right-0 flex justify-center gap-1 z-20 sm:bottom-2 sm:gap-2">
           <button
             onClick={onDownload}
             className="flex items-center gap-1 bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs font-medium transition-colors sm:px-3"
