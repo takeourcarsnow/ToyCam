@@ -77,24 +77,24 @@ function CameraView({
     <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
       {/* Camera controls overlay */}
       {!isPreviewMode && (
-        <div className="absolute top-4 left-4 flex items-center gap-2 z-10">
+        <div className="absolute top-2 left-2 flex items-center gap-1 z-10">
           <button
             onClick={() => setShowHelp(true)}
-            className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
+            className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 active:scale-95 transition-all"
             aria-label="Show keyboard shortcuts"
           >
-            <HelpCircle className="w-5 h-5" />
+            <HelpCircle className="w-4 h-4" />
           </button>
 
           {cameraActive && (
             <button
               onClick={onToggleSettings}
-              className={`p-3 rounded-full hover:scale-110 active:scale-95 transition-all ${
+              className={`p-2 rounded-full hover:scale-110 active:scale-95 transition-all ${
                 showSettings ? 'bg-blue-500 text-white' : 'bg-black/50 backdrop-blur-sm text-white hover:bg-black/70'
               }`}
               title={showSettings ? 'Hide settings' : 'Show settings'}
             >
-              <Settings className="w-5 h-5" />
+              <Settings className="w-4 h-4" />
             </button>
           )}
           
@@ -102,14 +102,14 @@ function CameraView({
             <>
               <button
                 onClick={onSwitchCamera}
-                className="bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all"
+                className="bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 active:scale-95 transition-all"
                 aria-label="Switch camera"
               >
-                <SwitchCamera className="w-5 h-5" />
+                <SwitchCamera className="w-4 h-4" />
               </button>
               
               {/* Aspect ratio selector */}
-              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1">
                 <Select
                   label=""
                   value={aspectRatio}
@@ -127,7 +127,7 @@ function CameraView({
               </div>
               
               {/* Overlay selector */}
-              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-3 py-2">
+              <div className="bg-black/50 backdrop-blur-sm rounded-lg px-2 py-1">
                 <Select
                   label=""
                   value={overlayType}
@@ -147,7 +147,7 @@ function CameraView({
           
           <button
             onClick={onToggleCamera}
-            className={`p-3 rounded-full transition-all active:scale-95 ${
+            className={`p-2 rounded-full transition-all active:scale-95 ${
               cameraActive
                 ? 'bg-red-500 hover:bg-red-600 text-white'
                 : 'bg-blue-500 hover:bg-blue-600 text-white'
@@ -155,9 +155,9 @@ function CameraView({
             aria-label={cameraActive ? 'Stop camera' : 'Start camera'}
           >
             {cameraActive ? (
-              <CameraOff className="w-5 h-5" />
+              <CameraOff className="w-4 h-4" />
             ) : (
-              <Camera className="w-5 h-5" />
+              <Camera className="w-4 h-4" />
             )}
           </button>
         </div>
@@ -205,8 +205,8 @@ function CameraView({
       
       {/* Effects buttons overlay */}
       {cameraActive && !isPreviewMode && showSettings && (
-        <div className="absolute top-16 sm:top-20 left-4 right-4 z-10">
-          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <div className="absolute top-12 left-4 right-4 z-10">
+          <div className="flex gap-1 overflow-x-auto pb-1 scrollbar-hide">
             {EFFECTS.map((effect) => (
               <div key={effect.type} className="flex-shrink-0">
                 <EffectButton
@@ -215,6 +215,7 @@ function CameraView({
                   active={effect.type === 'none' ? activeEffects.size === 0 : activeEffects.has(effect.type)}
                   onClick={() => onEffectChange(effect.type)}
                   compact
+                  hideLabel
                 />
               </div>
             ))}
@@ -261,7 +262,7 @@ function CameraView({
       
       {/* Settings overlay */}
       {cameraActive && activeEffects.size > 0 && !isPreviewMode && showSettings && (
-        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 max-h-[45vh] sm:max-h-[50vh] overflow-y-auto">
+        <div className="absolute bottom-16 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 h-32 overflow-y-auto">
           <SettingsPanel
             currentEffect={currentEffect}
             activeEffects={activeEffects}
@@ -275,10 +276,10 @@ function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onToggleCaptureMode}
-          className="absolute top-4 right-4 bg-black/50 backdrop-blur-sm text-white p-3 rounded-full hover:bg-black/70 active:scale-95 transition-all z-10"
+          className="absolute top-2 right-2 bg-black/50 backdrop-blur-sm text-white p-2 rounded-full hover:bg-black/70 active:scale-95 transition-all z-10"
           title={`Switch to ${captureMode === 'photo' ? 'video' : 'photo'} mode`}
         >
-          {captureMode === 'photo' ? <Video className="w-5 h-5" /> : <Image className="w-5 h-5" />}
+          {captureMode === 'photo' ? <Video className="w-4 h-4" /> : <Image className="w-4 h-4" />}
         </button>
       )}
 
@@ -286,7 +287,7 @@ function CameraView({
       {cameraActive && !isPreviewMode && (
         <button
           onClick={onCapture}
-          className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 w-12 h-12 sm:w-16 sm:h-16 rounded-full border-4 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
+          className={`absolute bottom-4 left-1/2 transform -translate-x-1/2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-3 shadow-lg hover:scale-110 active:scale-95 transition-all z-20 ${
             captureMode === 'photo'
               ? 'bg-white border-white/20'
               : isRecording
@@ -295,9 +296,9 @@ function CameraView({
           }`}
         >
           {captureMode === 'photo' ? (
-            <div className="w-5 h-5 sm:w-6 sm:h-6 bg-gray-800 rounded-full mx-auto"></div>
+            <div className="w-4 h-4 sm:w-5 sm:h-5 bg-gray-800 rounded-full mx-auto"></div>
           ) : (
-            <div className={`w-5 h-5 sm:w-6 sm:h-6 mx-auto rounded-sm ${
+            <div className={`w-4 h-4 sm:w-5 sm:h-5 mx-auto rounded-sm ${
               isRecording ? 'bg-white' : 'bg-red-500'
             }`}></div>
           )}
@@ -306,7 +307,7 @@ function CameraView({
 
       {/* Recording indicator */}
       {isRecording && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 z-20">
+        <div className="absolute top-16 left-1/2 transform -translate-x-1/2 bg-red-500 text-white px-4 py-2 rounded-full text-sm font-medium flex items-center gap-2 z-20">
           <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
           Recording
         </div>
@@ -314,19 +315,19 @@ function CameraView({
 
       {/* Photo/video preview controls */}
       {isPreviewMode && (
-        <div className="absolute bottom-6 left-0 right-0 flex justify-center gap-4 z-20">
+        <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-3 z-20">
           <button
             onClick={onDownload}
-            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-6 py-3 rounded-full font-medium transition-all"
+            className="flex items-center gap-2 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white px-4 py-2 rounded-full font-medium transition-all text-sm"
           >
-            <Download className="w-5 h-5" />
+            <Download className="w-4 h-4" />
             Download
           </button>
           <button
             onClick={onCancel}
-            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white px-6 py-3 rounded-full font-medium transition-all"
+            className="flex items-center gap-2 bg-red-500 hover:bg-red-600 active:bg-red-700 text-white px-4 py-2 rounded-full font-medium transition-all text-sm"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
             Cancel
           </button>
         </div>
