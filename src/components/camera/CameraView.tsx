@@ -77,7 +77,7 @@ function CameraView({
     <div className="flex-1 relative bg-black flex items-center justify-center overflow-hidden">
       {/* Camera controls overlay */}
       {!isPreviewMode && (
-        <div className="absolute top-1 left-1 right-1 flex flex-wrap items-center gap-0.5 z-10 max-w-full sm:top-2 sm:left-2 sm:gap-1">
+        <div className="absolute top-1 left-1 right-1 flex flex-wrap items-center justify-center gap-1 z-10 max-w-full sm:top-2 sm:left-2 sm:gap-2">
           <button
             onClick={() => setShowHelp(true)}
             className="bg-gray-800 text-white p-0.5 rounded hover:bg-gray-700 transition-colors text-xs sm:p-1"
@@ -206,7 +206,7 @@ function CameraView({
       {/* Effects buttons overlay */}
       {cameraActive && !isPreviewMode && showSettings && (
         <div className="absolute top-6 left-1 right-1 z-10 sm:left-2 sm:right-2">
-          <div className="flex gap-0.5 overflow-x-auto pb-1 sm:gap-1">
+          <div className="flex justify-center gap-1 overflow-x-auto pb-1 sm:gap-2">
             {EFFECTS.map((effect) => (
               <div key={effect.type} className="flex-shrink-0">
                 <EffectButton
